@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>轮播图</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    .slide-show {
+      width: 960px;
+      height: 540px;
+      overflow: hidden;
+      position: relative;
+      margin: 100px auto;
+    }
+
+    .slide-show>ul {
+      list-style: none;
+      position: absolute;
+      white-space: nowrap;
+      font-size: 0;
+      top: 0;
+      left: 0;
+    }
+
+    .slide-show li{
+      display: inline-block;
+    }
+
+    .slide-show img {
+      width: 960px;
+      height: 540px;
+    }
+
+    .slide-btn {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 24px;
+      transform: translateY(-50%);
+    }
+
+    .slide-btn>div {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      color: rgba(255, 255, 255, 0.8);
+      background: rgba(0, 0, 0, 0.1);
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .slide-btn>div:first-child {
+      left: 0;
+    }
+
+    .slide-btn>div:last-child {
+      right: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <button>autoplay</button>
+  <div class="slide-show">
+    <ul id="slide-list">
+      <li><img src="37812_nichijou.jpg" alt="" /></li>
+      <li><img src="37813_nichijou.jpg" alt="" /></li>
+      <li><img src="37814_nichijou.jpg" alt="" /></li>
+      <li><img src="37815_nichijou.jpg" alt="" /></li>
+      <li><img src="37816_nichijou.jpg" alt="" /></li>
+    </ul>
+    <div class="slide-btn">
+      <div>&lt;</div>
+      <div>&gt;</div>
+    </div>
+  </div>
+  <script lang="text/javascript">
+    window.onload = function () {
+      const ul = document.getElementById('slide-list');
+      const minOffset = ul.offsetWidth * -1;
+      ul.append(ul.children[0].cloneNode(true));
+      console.log(minOffset)
+      ul.current = 0;
+
+      ul.isAutoPlay = false;
+      const btn = document.getElementsByTagName('button')[0];
+      btn.timer = null;
+      btn.onclick = function autoplay() {
+        if(ul.isAutoPlay) {
+          clearInterval(btn.timer);
+          btn.innerText = 'startAutoPlay';
+          ul.isAutoPlay = false;
+        } else {
+          next()
+          btn.timer = setInterval(() => next(), 5000);
+          btn.innerText = 'stopAutoPlay';
+          ul.isAutoPlay = true;
+        }
+      }
+
+      const prevBtn = document.getElementsByClassName("slide-btn")[0].children[0];
+      const nextBtn = document.getElementsByClassName("slide-btn")[0].children[1];
+
+      prevBtn.onclick = prev;
+
+      nextBtn.onclick = next;
+
+      function prev() {
+        if (ul.isAnimate) return;
+
+        let current = ul.current;
+        const length = ul.children.length;
+
+        if (current === 0) {
+          ul.current = current = length - 1;
+          ul.style.left = `-${current * 960}px`;
+        }
+
+        ul.current = --current;
+        const nextOffset = current * 960;
+        return animate(ul, nextOffset);
+      }
+
+      function next() {
+        if (ul.isAnimate) return;
+
+        let current = ul.current;
+        const length = ul.children.length;
+
+        if (current === length - 1) {
+          ul.current = current = 0;
+          ul.style.left = 0;
+        }
+
+        ul.current = ++current;
+        const nextOffset = current * 960;
+        return animate(ul, nextOffset);
+      }
+
+      function animate(ele, offset, cb) {
+        return new Promise((resolve, reject) => {
+          ele.isAnimate = true;
+          const timer = setInterval(() => {
+            if (ele.offsetLeft > -1 * offset) {
+              if (ele.offsetLeft - 10 > -1 * offset) {
+                ele.style.left = `${ele.offsetLeft - 10}px`;
+              } else {
+                ele.style.left = `${-1 * offset}px`;
+                clearInterval(timer);
+                ele.isAnimate = false;
+                resolve();
+              }
+            } else {
+              if (ele.offsetLeft + 10 < -1 * offset) {
+                ele.style.left = `${ele.offsetLeft + 10}px`;
+              } else {
+                ele.style.left = `${-1 * offset}px`;
+                clearInterval(timer);
+                ele.isAnimate = false;
+                resolve();
+              }
+            }
+          }, 16);
+        })
+      }
+    }
+  </script>
+</body>
+
+</html>
